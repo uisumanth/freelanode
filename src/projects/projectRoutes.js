@@ -8,7 +8,12 @@ const ProjectRoutes = [
     callback: CreateProject,
   },
   {
-    path: "/getProjects",
+    path: "/getProjectsByUser",
+    method: "post",
+    callback: GetProjects.GetProjectsByUser,
+  },
+  {
+    path: "/getAllProjects",
     method: "post",
     callback: GetProjects.AllProjects,
   },
