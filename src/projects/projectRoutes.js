@@ -10,7 +10,12 @@ const ProjectRoutes = [
   {
     path: "/getProjects",
     method: "post",
-    callback: GetProjects,
+    callback: GetProjects.AllProjects,
+  },
+  {
+    path: "/getProjectsById",
+    method: "post",
+    callback: GetProjects.ProjectById,
   },
 ];
 
