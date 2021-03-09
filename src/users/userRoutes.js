@@ -6,11 +6,13 @@ const UserRoutes = [
     path: "/register",
     method: "post",
     callback: UserRegister,
+    guard:false,
   },
   {
     path: "/login",
     method: "post",
     callback: LoginInsert,
+    guard:false,
   },
 ];
 

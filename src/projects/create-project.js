@@ -13,7 +13,7 @@ function getNextSequence(db, name, callback) {
   );
 }
 
-const CreateProject = (req, res) => {
+const CreateProject = (req, res,data) => {
   const request = req.body;
   db = mongoUtil.getDb();
   getNextSequence(db, "projectId", function (err, result) {

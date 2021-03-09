@@ -1,18 +1,18 @@
 var mongoUtil = require("../../mongoUtil");
 var db;
 
-async function GetAllProject(req, res) {
+async function GetAllProject(req, res,data) {
   const request = req.body;
   db = mongoUtil.getDb();
   const all_data = [];
   var cursor = db.collection("projects").find();
   await cursor.forEach(function (doc) {
-    all_data.push(doc);
+    all_data.push({doc,id:doc._id});
   });
   res.json({ status: true, data: all_data });
 }
 
-const ProjectById = (req, res) => {
+const ProjectById = (req, res,data) => {
   const request = req.body;
   db = mongoUtil.getDb();
   var query = { projectId: request.projectId, userId: request.userId };
@@ -28,7 +28,7 @@ const ProjectById = (req, res) => {
   });
 };
 
-async function GetProjectsByUser(req, res) {
+async function GetProjectsByUser(req, res,data) {
   const request = req.body;
   db = mongoUtil.getDb();
   var query = { userId: request.userId };

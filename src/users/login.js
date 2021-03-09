@@ -1,17 +1,21 @@
 var mongoUtil = require("../../mongoUtil");
+var validateJwt = require("../config/jwt.handler");
+
 var db;
 
-const LoginInsert = (req, res) => {
+async function LoginInsert (req, res) { console.log(req.body)
   const request = req.body;
   db = mongoUtil.getDb();
   var query = { email: request.email, password: request.password };
   db.collection("users", function (err, collection) {
     collection.findOne(query, function (err, item) {
-      console.log(err);
       if (!item) {
         res.json({ status: false, data: null, message: "User not Found" });
       } else {
-        res.json({ status: true, data: item });
+        validateJwt.createToken(item,(token)=>{
+            console.log(token)
+          res.json({ status: true, data: {...item,accessToken:token} });
+          })
       }
     });
   });
