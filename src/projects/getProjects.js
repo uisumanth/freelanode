@@ -7,7 +7,8 @@ async function GetAllProject(req, res,data) {
   const all_data = [];
   var cursor = db.collection("projects").find();
   await cursor.forEach(function (doc) {
-    all_data.push({doc,id:doc._id});
+    doc['id'] = doc['_id']
+    all_data.push(doc);
   });
   res.json({ status: true, data: all_data });
 }
