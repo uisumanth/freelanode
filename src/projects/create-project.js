@@ -32,6 +32,9 @@ const CreateProject = (req, res,data) => {
           submissionAttachments: request.submissionAttachments ? request.submissionAttachments : [],
           userId:request.userId,
           assigned_userId:'',
+          total_bids:request.total_bids ? request.total_bids : 0,
+          avg_bid:request.avg_bid ? request.avg_bid : 0,
+          bid_placed:request.bid_placed ? request.bid_placed : '',
           status:'Open'
         },
         function (error, response) {

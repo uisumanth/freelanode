@@ -23,7 +23,7 @@ const UserRegister = (req, res) => {
           user_id: result,
           firstName: request.firstName,
           lastName: request.lastName,
-          role: "Customer",
+          role: request.customerRole,
           dateOfBirth: request.dateOfBirth,
           password: request.password,
           phoneNumber: request.phoneNumber,
