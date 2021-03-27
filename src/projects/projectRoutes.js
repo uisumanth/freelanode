@@ -1,6 +1,6 @@
 var CreateProject = require("./create-project");
 var GetProjects = require("./getProjects");
-var CreateBid = require("./bids");
+var Bids = require("./bids");
 
 const ProjectRoutes = [
   {
@@ -30,7 +30,13 @@ const ProjectRoutes = [
   {
     path: "/createBid",
     method: "post",
-    callback: CreateBid,
+    callback: Bids.CreateBid,
+    guard:true
+  },
+  {
+    path: "/getRecentBids",
+    method: "get",
+    callback: Bids.GetAllBids,
     guard:true
   },
 ];

@@ -42,4 +42,19 @@ const CreateBid = (req, res,data) => {
   });
 };
 
-module.exports = CreateBid;
+
+async function GetAllBids(req, res, data) {
+    db = mongoUtil.getDb();
+    const all_data = [];
+    var cursor = db.collection("bids").find().limit(10);
+    await cursor.forEach(function (doc) {
+      doc["id"] = doc["_id"];
+      all_data.push(doc);
+    });
+    res.json({ status: true, data: all_data });
+  }
+
+module.exports = {
+    GetAllBids:GetAllBids,
+    CreateBid:CreateBid
+} ;
