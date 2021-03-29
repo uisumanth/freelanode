@@ -2,11 +2,11 @@ var express = require('express');
 var mongoUtil = require( './mongoUtil' );
 var GenerateRoutes = require('./routes') 
 const bodyParser = require('body-parser');
-
+var path=require('path');
 var app = express();
 app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
-
+app.use(express.static(path.join(__dirname,'public')));
 GenerateRoutes(app);
 
 app.listen(8080, function () {

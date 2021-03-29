@@ -1,7 +1,8 @@
 var UserRoutes = require("./src/users/userRoutes");
 var ProjectRoutes = require("./src/projects/projectRoutes");
+var UploadRoutes = require("./src/upload/uploadRoutes");
 var validateJwt = require("./src/config/jwt.handler");
-var allRoutes = [...UserRoutes, ...ProjectRoutes];
+var allRoutes = [...UserRoutes, ...ProjectRoutes,...UploadRoutes];
 var basePath = "/v1";
 
 function GenerateRoutes(app) {
