@@ -27,6 +27,7 @@ const UserRegister = (req, res) => {
           dateOfBirth: request.dateOfBirth,
           password: request.password,
           phoneNumber: request.phoneNumber,
+          freelancerTier:[{"id": "1","name": "Tier 1","label": "Tier 1","value": "Tier 1"}],
           email: request.email,
         },
         function (error, response) {
