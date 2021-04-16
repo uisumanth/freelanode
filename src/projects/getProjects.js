@@ -20,7 +20,7 @@ async function ProjectById(req, res, data) {
   var projectDetails = await db.collection("projects").findOne(query);
   if (projectDetails) {
     var bidsDetails = await GetProjectsBids(request);
-    res.json({ status: true, data: {...projectDetails,bids:bidsDetails} });
+    res.json({ status: true, data: { ...projectDetails, bids: bidsDetails } });
   } else {
     res.json({ status: false, data: null, message: "Project not Found" });
   }
@@ -50,8 +50,37 @@ async function GetProjectsByUser(req, res, data) {
   });
   res.json({ status: true, data: all_data });
 }
+
+function UpdateProjectStatus(projectId, status) {
+  db = mongoUtil.getDb();
+  let query = { projectId: projectId };
+  db.collection("projects", function (err, collection) {
+    var projectDetails = collection.findOne({ query });
+    if (projectDetails && projectDetails.status < status) {
+      collection.updateOne(
+        query,
+        {
+          $set: {
+            status: status,
+          },
+        },
+        { acknowledged: true },
+        (err, doc) => {
+          if (!doc) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      );
+    } else {
+      return false;
+    }
+  });
+}
 module.exports = {
   AllProjects: GetAllProject,
   ProjectById: ProjectById,
   GetProjectsByUser: GetProjectsByUser,
+  UpdateProjectStatus: UpdateProjectStatus,
 };

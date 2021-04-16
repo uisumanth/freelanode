@@ -37,7 +37,7 @@ const CreateProject = (req, res,data) => {
           total_bids:request.total_bids ? request.total_bids : 0,
           avg_bid:request.avg_bid ? request.avg_bid : 0,
           bid_placed:request.bid_placed ? request.bid_placed : '',
-          status:'Open'
+          status:0
         },
         function (error, response) {
           if (error) {

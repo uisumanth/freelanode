@@ -1,4 +1,6 @@
 var mongoUtil = require("../../mongoUtil");
+var GetProjects = require("./getProjects");
+
 var db;
 
 function getNextSequence(db, name, callback) {
@@ -28,12 +30,13 @@ const CreateBid = (req, res,data) => {
           createdBy:request.userId,
           status:'Open'
         },
-        function (error, response) {
+        async function (error, response) {
           if (error) {
             console.log("Error occurred while inserting create project");
             res.json({ status: false, data: null });
           } else {
             console.log("inserted create project record", response.ops[0]);
+            await GetProjects.UpdateProjectStatus(request.projectId,1);
             res.json({ status: true, data: response.ops[0] });
           }
         }
