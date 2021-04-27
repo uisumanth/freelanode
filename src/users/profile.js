@@ -4,16 +4,24 @@ var db;
 async function UpdateUser(req, res,data) {
   const request = req.body;
   db = mongoUtil.getDb();
-  console.log(request)
 
   db.collection("users", function (err, collection) {
       collection.updateOne({user_id: request.userId}, 
     {$set:{
         firstName: request.firstName,
         lastName: request.lastName,
-        role: request.customerRole,
+        role: request.role,
         dateOfBirth: request.dateOfBirth,
         phoneNumber: request.phoneNumber,
+        languages:request.languages,
+        skillSet:request.skillSet,
+        addressLine1:request.add_line_1,
+        addressLine2:request.add_line_2,
+        landmark:request.landmark,
+        city:request.city,
+        pin:request.pin,
+        state:request.state,
+        country:request.country
       }}, {acknowledged:true}, (err, doc) => {
         if (!doc) {
             res.json({ status: false, data: null, message: "Upadate Failed" });

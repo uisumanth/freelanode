@@ -29,6 +29,15 @@ const UserRegister = (req, res) => {
           phoneNumber: request.phoneNumber,
           freelancerTier:[{"id": "1","name": "Tier 1","label": "Tier 1","value": "Tier 1"}],
           email: request.email,
+          languages:request.languages ? request.languages : [],
+          skillSet:request.skillSet ? request.skillSet : [],
+          addressLine1:request.add_line_1 ? request.add_line_1 : '',
+          addressLine2:request.add_line_2 ? request.add_line_2 :'',
+          landmark:request.landmark ? request.landmark : '',
+          city:request.city ? request.city : '',
+          pin:request.pin ? request.pin :'',
+          state:request.state ?request.state :'',
+          country:request.country ? request.country:''
         },
         function (error, response) {
           if (error) {

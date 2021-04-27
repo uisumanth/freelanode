@@ -1,12 +1,18 @@
-var CreateProject = require("./create-project");
+var Project = require("./create-project");
 var GetProjects = require("./getProjects");
 var Bids = require("./bids");
-
+var ProjectFilter = require('./searchProjects');
 const ProjectRoutes = [
   {
     path: "/createProject",
     method: "post",
-    callback: CreateProject,
+    callback: Project.createProject,
+    guard:true
+  },
+  {
+    path: "/updateProject",
+    method: "post",
+    callback: Project.updateProject,
     guard:true
   },
   {
@@ -39,6 +45,36 @@ const ProjectRoutes = [
     callback: Bids.GetAllBids,
     guard:true
   },
+  {
+    path: "/searchProjects",
+    method: "post",
+    callback: ProjectFilter.searchProducts,
+    guard:true
+  },
+  {
+    path: "/markAsComplete",
+    method: "post",
+    callback: GetProjects.markAsComplete,
+    guard:true
+  },
+  {
+    path: "/markAsAward",
+    method: "post",
+    callback: GetProjects.markAsAward,
+    guard:true
+  },
+  {
+    path: "/markAsArbitrator",
+    method: "post",
+    callback: GetProjects.markAsArbitrator,
+    guard:true
+  },
+  {
+    path: "/acceptBid",
+    method: "post",
+    callback: GetProjects.acceptBid,
+    guard:true
+  }
 ];
 
 module.exports = ProjectRoutes;
