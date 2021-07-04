@@ -74,7 +74,20 @@ const ProjectRoutes = [
     method: "post",
     callback: GetProjects.acceptBid,
     guard:true
-  }
+  },
+  {
+    path: "/getProjectBids",
+    method: "post",
+    callback: GetProjects.getProjectsBids,
+    guard:true
+  },
+  {
+    path: "/getProjectsByStatus",
+    method: "post",
+    callback: GetProjects.getProjectsByStatus,
+    guard:true
+  },
+  
 ];
 
 module.exports = ProjectRoutes;

@@ -1,3 +1,4 @@
+const e = require("express");
 const { request } = require("express");
 var mongoUtil = require("../../mongoUtil");
 var db;
@@ -22,20 +23,23 @@ async function ProjectById(req, res, data) {
   var userDetails = await db.collection("users").findOne({user_id: projectDetails.userId });
 
   if (projectDetails) {
-    var bidsDetails = await GetProjectsBids(request);
+    var bidQuery = { projectId: request.projectId };
+    if(request.userId !== undefined && request.userId !== null){
+      bidQuery['createdBy'] = request.userId;
+    }
+    if(projectDetails['bidId']){
+      bidQuery = { bidId: projectDetails['bidId']};
+    }
+    var bidsDetails = await GetProjectsBids(bidQuery);
     res.json({ status: true, data: { ...projectDetails, bids: bidsDetails ? bidsDetails[0]: null,userDetails:userDetails } });
   } else {
     res.json({ status: false, data: null, message: "Project not Found" });
   }
 }
 
-async function GetProjectsBids(req) {
+async function GetProjectsBids(query) {
   try {
     var bidsDetails = [];
-    var query = { projectId: req.projectId };
-    if(req.userId !== undefined && req.userId !== null){
-      query['createdBy'] = req.userId;
-    }
     var cursor = db.collection("bids").find(query);
     await cursor.forEach(function (doc) {
       doc["id"] = doc["_id"];
@@ -45,6 +49,56 @@ async function GetProjectsBids(req) {
   } catch (e) {
     console.log(e);
   }
+}
+
+async function GetProjectsBidsApi(req,res) {
+  const request = req.body;
+  db = mongoUtil.getDb();
+  try {
+    var bidsDetails = [];
+    var query = { projectId: request.projectId };
+    if(request.userId !== undefined && request.userId !== null){
+      query['createdBy'] = request.userId;
+    }
+    var cursor = db.collection("bids").find(query);
+    const promises = []
+    await cursor.forEach(async function (doc) {
+      doc["id"] = doc["_id"];
+      doc['userDetails'] = null;
+      bidsDetails.push(doc);
+    });
+    bidsDetails.forEach((each) => {
+      const promise = getUSerDetailsFOrBid(each);
+      promises.push(promise);
+    })
+    if(promises.length){
+      Promise.all(promises).then((results) => {
+        results.forEach((val,index)=> {
+          bidsDetails[index]['userDetails'] = val;
+        })
+        res.json({data: bidsDetails,status:true});
+      })
+    }else{
+    res.json({data: bidsDetails,status:true});
+    }
+  } catch (e) {
+    console.log(e);
+    res.json({ status: false, data: null, message: "No Bids Found" });
+  }
+}
+
+async function getUSerDetailsFOrBid(bid){
+  return await db.collection("users").findOne({user_id:bid.createdBy});
+  bidsDetails.forEach(async (each) => {
+    each["userDetails"] = null;
+    var userDetails = await db.collection("users").findOne({user_id:each.createdBy});
+    console.log(userDetails)
+    if(userDetails){
+      each["userDetails"] = userDetails
+    }
+  })
+  console.log("rteurn")
+  return bidsDetails;
 }
 async function GetProjectsByUser(req, res, data) {
   const request = req.body;
@@ -168,6 +222,18 @@ function acceptBid(req,res){
     }
   });
 }
+
+async function GetProjectsByStatus(req, res, data) {
+  const request = req.body;
+  db = mongoUtil.getDb();
+  const all_data = [];
+  var cursor = db.collection("projects").find({status:request.status});
+  await cursor.forEach(function (doc) {
+    doc["id"] = doc["_id"];
+    all_data.push(doc);
+  });
+  res.json({ status: true, data: all_data });
+}
 module.exports = {
   AllProjects: GetAllProject,
   ProjectById: ProjectById,
@@ -176,5 +242,7 @@ module.exports = {
   markAsComplete:markAsComplete,
   markAsArbitrator:markAsArbitrator,
   markAsAward:markAsAward,
-  acceptBid:acceptBid
+  acceptBid:acceptBid,
+  getProjectsBids:GetProjectsBidsApi,
+  getProjectsByStatus:GetProjectsByStatus
 };
