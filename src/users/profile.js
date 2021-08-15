@@ -1,10 +1,14 @@
 var mongoUtil = require("../../mongoUtil");
+var Regsiter = require("./register");
+
 var db;
 
 async function UpdateUser(req, res,data) {
   const request = req.body;
   db = mongoUtil.getDb();
-
+  
+  const validator = {status:true}; //Regsiter.CheckValidations(request);
+  if (validator.status) {
   db.collection("users", function (err, collection) {
       collection.updateOne({user_id: request.userId}, 
     {$set:{
@@ -21,7 +25,8 @@ async function UpdateUser(req, res,data) {
         city:request.city,
         pin:request.pin,
         state:request.state,
-        country:request.country
+        country:request.country,
+        user_img:request.user_img,
       }}, {acknowledged:true}, (err, doc) => {
         if (!doc) {
             res.json({ status: false, data: null, message: "Upadate Failed" });
@@ -30,7 +35,13 @@ async function UpdateUser(req, res,data) {
           }
 })
 })
-
+  }else{
+    res.json({
+      status: false,
+      message: validator.message,
+      data: null,
+    });
+  }
 }
 
 const GetUser = (req, res) => {
@@ -50,6 +61,7 @@ const GetUser = (req, res) => {
     });
   });
 };
+
 
 
 module.exports = {

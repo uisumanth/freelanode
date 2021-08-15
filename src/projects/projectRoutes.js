@@ -46,6 +46,12 @@ const ProjectRoutes = [
     guard:true
   },
   {
+    path: "/getRecentBids",
+    method: "post",
+    callback: Bids.GetAllBidsByUser,
+    guard:true
+  },
+  {
     path: "/searchProjects",
     method: "post",
     callback: ProjectFilter.searchProducts,
@@ -85,6 +91,25 @@ const ProjectRoutes = [
     path: "/getProjectsByStatus",
     method: "post",
     callback: GetProjects.getProjectsByStatus,
+    guard:true
+  },
+  {
+    path: "/getAnalytics",
+    method: "post",
+    callback: ProjectFilter.getAnalytics,
+    guard:true
+  },
+  {
+    path: "/downloadPath",
+    method: "get",
+    callback: GetProjects.downloadPath,
+    guard:true
+  },
+  {
+    path: "/updateAttachements",
+    method: "post",
+    callback: GetProjects.updateProjectAttachements
+    ,
     guard:true
   },
   

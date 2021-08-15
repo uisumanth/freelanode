@@ -83,6 +83,9 @@ async function CreateMessage(req, res) {
 }
 
 function insertUserReciept(req, res) {
+  if(!req.userId || req.receipt_userId){
+    res.json({ status: false, data: null,message: "Please select User" });
+  }else{
   getNextSequence(db, "userInbox", function (err, sequenceId) {
     if (!err) {
       db.collection("user_inbox").insertOne(
@@ -103,6 +106,7 @@ function insertUserReciept(req, res) {
       );
     }
   });
+}
 }
 
 function insertMessage(req, res, sequenceId) {

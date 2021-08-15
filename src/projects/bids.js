@@ -57,7 +57,48 @@ async function GetAllBids(req, res, data) {
     res.json({ status: true, data: all_data });
   }
 
+  async function GetAllBidsByUser(req, res, data) {
+    const request = req.body;
+    db = mongoUtil.getDb();
+    try {
+      const query = [];
+      if(request.userId){
+        query.push({ createdBy:request.userId})
+      }else{
+        res.json({ status: false, data: null, message: "Please enter User ID" });
+      }     
+      var bidsDetails = [];
+      var cursor = db.collection("bids").find(...query);
+      const promises = []
+      await cursor.forEach(async function (doc) {
+        doc["id"] = doc["_id"];
+        bidsDetails.push(doc);
+      });
+      bidsDetails.forEach((each) => {
+        const promise = getUserDetailsForBid(each);
+        promises.push(promise);
+      })
+      if(promises.length){
+        Promise.all(promises).then((results) => {
+          results.forEach((val,index)=> {
+            bidsDetails[index]= {...bidsDetails[index],...val};
+          })
+          res.json({data: bidsDetails,status:true});
+        })
+      }else{
+      res.json({data: bidsDetails,status:true});
+      }
+    } catch (e) {
+      console.log(e);
+      res.json({ status: false, data: null, message: "No Bids Found" });
+    }
+  }
+
+  async function getUserDetailsForBid(bid){
+    return await db.collection("projects").findOne({projectId:bid.projectId});
+  }
 module.exports = {
     GetAllBids:GetAllBids,
+    GetAllBidsByUser:GetAllBidsByUser,
     CreateBid:CreateBid
 } ;

@@ -1,12 +1,13 @@
-var UserRegister = require("./register");
+var Register = require("./register");
 var LoginInsert = require("./login");
 var UserProfile = require("./profile");
+var ResetPassword = require("./resetPassword");
 
 const UserRoutes = [
   {
     path: "/register",
     method: "post",
-    callback: UserRegister,
+    callback: Register.UserRegister,
     guard:false,
   },
   {
@@ -19,12 +20,18 @@ const UserRoutes = [
     path: "/getUserDetails",
     method: "post",
     callback: UserProfile.GetUser,
-    guard:false,
+    guard:true,
   },
   {
     path: "/updateUser",
     method: "post",
     callback: UserProfile.UpdateUser,
+    guard:true,
+  },
+  {
+    path: "/resetPassword",
+    method: "post",
+    callback: ResetPassword,
     guard:false,
   },
 ];

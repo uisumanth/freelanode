@@ -2,9 +2,9 @@ var Dashboard = require("./dashboard");
 
 const DashboardRoutes = [
   {
-    path: "/getDashboardAnalytics",
+    path: "/getDashboardSearch",
     method: "post",
-    callback: Dashboard.getDashboardAnalytics,
+    callback: Dashboard.getDashboardSearch,
     guard:true
   },
 ];

@@ -6,7 +6,7 @@ var app = express();
 
 app.use(express.urlencoded());
 app.use(express.json());
-app.use(express.static(path.join(__dirname,'public')));
+app.use("/v1/files", express.static(__dirname + '/public/uploads'));
 GenerateRoutes(app);
 
 app.listen(8080, function () {
