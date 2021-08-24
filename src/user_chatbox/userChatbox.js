@@ -62,6 +62,7 @@ async function AllUsers(req, res) {
       user_id: doc.user_id,
       firstName: doc.firstName,
       lastName: doc.lastName,
+      user_img:doc.user_img
     });
   });
   res.json({ status: true, data: all_data });
@@ -71,9 +72,14 @@ async function CreateMessage(req, res) {
   const request = req.body;
   db = mongoUtil.getDb();
   var query = {
-    user_id: request.userId,
-    receipt_userId: request.receipt_userId,
-  };
+    "$or": [{
+      user_id: request.userId,
+      receipt_userId: request.receipt_userId,
+    }, {
+      user_id: request.receipt_userId,
+      receipt_userId: request.userId,
+    }]
+};
   var userDetails = await db.collection("user_inbox").findOne(query);
   if (userDetails) {
     insertMessage(request, res, userDetails.chatId);
@@ -83,7 +89,7 @@ async function CreateMessage(req, res) {
 }
 
 function insertUserReciept(req, res) {
-  if(!req.userId || req.receipt_userId){
+  if(!req.userId || !req.receipt_userId){
     res.json({ status: false, data: null,message: "Please select User" });
   }else{
   getNextSequence(db, "userInbox", function (err, sequenceId) {
@@ -99,7 +105,7 @@ function insertUserReciept(req, res) {
             console.log("Error occurred while inserting creating message");
             res.json({ status: false, data: null });
           } else {
-            console.log("inserted chat receiptant ", response.ops[0]);
+            console.log("inserted chat receiptant ");
             insertMessage(req, res, "C" + sequenceId);
           }
         }
@@ -140,8 +146,8 @@ async function GetMessagesByChatId(req, res) {
   var messages = db
     .collection("user_message")
     .find(query)
-    .skip(rows * (page - 1))
-    .limit(rows * page);
+   // .skip(rows * (page - 1))
+   // .limit(rows * page);
   await messages.forEach((doc) => {
     allMessages.push(doc);
   });
@@ -189,11 +195,21 @@ async function UserChats(req, res) {
   const request = req.body;
   db = mongoUtil.getDb();
   const all_data = [];
-  var query = { user_id: parseInt(request.userId) };
+  var query = {
+    "$or": [{
+        "user_id": parseInt(request.userId)
+    }, {
+        "receipt_userId": parseInt(request.userId)
+    }]
+};
   var cursor = db.collection("user_inbox").find(query);
   await cursor.forEach(async function (doc) {
+    let key = "receipt_userId";
+    if(request.userId == doc.receipt_userId){
+      key = "user_id";
+    }
     all_data.push({
-      receipt_userId: doc.receipt_userId,
+      receipt_userId: doc[key],
       chatId: doc.chatId
     });
   });
@@ -204,6 +220,7 @@ async function UserChats(req, res) {
     if (details) {
       each["firstName"] = details.firstName;
       each["lastName"] = details.lastName;
+      each["user_img"] = details.user_img;
     }
   }
   res.json({ status: true, data: all_data });

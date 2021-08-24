@@ -19,8 +19,8 @@ async function UpdateUser(req, res,data) {
         phoneNumber: request.phoneNumber,
         languages:request.languages,
         skillSet:request.skillSet,
-        addressLine1:request.add_line_1,
-        addressLine2:request.add_line_2,
+        addressLine1:request.addressLine1,
+        addressLine2:request.addressLine2,
         landmark:request.landmark,
         city:request.city,
         pin:request.pin,
@@ -50,7 +50,6 @@ const GetUser = (req, res) => {
   var query = { user_id: request.userId };
   db.collection("users", function (err, collection) {
     collection.findOne(query, function (err, item) {
-      console.log(err);
       if (!item) {
         res.json({ status: false, data: null, message: "User not Found" });
       } else {

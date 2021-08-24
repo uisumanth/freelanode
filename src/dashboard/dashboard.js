@@ -5,12 +5,12 @@ async function getDashboardSearch(req,res){
     const request = req.body;
   db = mongoUtil.getDb();
   const all_data = [];
-  const query = [];
+  const query = {$or: [{status: 0}, {status: 1}]};
   if(request.search){
-    query.push({ title:new RegExp('.*' +  request.search + '.*',"i")})
+    query["title"] = new RegExp('.*' +  request.search + '.*',"i");
   }
   
-  var cursor = await db.collection("projects").find(...query);
+  var cursor = await db.collection("projects").find(query);
   await cursor.forEach(function (doc) {
     doc["id"] = doc["_id"];
     all_data.push(doc);

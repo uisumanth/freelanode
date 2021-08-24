@@ -42,13 +42,14 @@ const CreateProject = (req, res, data) => {
           avg_bid: request.avg_bid ? request.avg_bid : 0,
           bid_placed: request.bid_placed ? request.bid_placed : "",
           status: 0,
+          proDueDate:request.proDueDate ? request.proDueDate : ""
         },
         function (error, response) {
           if (error) {
             console.log("Error occurred while inserting create project");
             res.json({ status: false, data: null });
           } else {
-            console.log("inserted create project record", response.ops[0]);
+            console.log("inserted create project record");
             res.json({ status: true, data: response.ops[0] });
           }
         }
@@ -60,7 +61,7 @@ const CreateProject = (req, res, data) => {
 const UpdateProject = (req, res, data) => {
   const request = req.body;
   db = mongoUtil.getDb();
-  const updatedFields = ["title","description","skillSet","paymentType","estimateBudget","estimatedCurr",
+  const updatedFields = ["title","description","skillSet","paymentType","estimateBudget","estimatedCurr","proDueDate",
   "estimatedVal","freelancerTier","projectDueDate","projectAttachments","submissionAttachments","total_bids","avg_bid"];
   const body = setBody(updatedFields,request);
   db.collection("projects", function (err, collection) {

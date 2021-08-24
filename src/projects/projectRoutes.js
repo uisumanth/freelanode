@@ -103,7 +103,7 @@ const ProjectRoutes = [
     path: "/downloadPath",
     method: "get",
     callback: GetProjects.downloadPath,
-    guard:true
+    guard:false
   },
   {
     path: "/updateAttachements",

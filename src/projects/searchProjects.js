@@ -31,7 +31,6 @@ async function searchProducts(req,res){
     })
   }
   
-  // console.log(query)
   var cursor = await db.collection("projects").find(...query);
   await cursor.forEach(function (doc) {
     doc["id"] = doc["_id"];
@@ -116,10 +115,10 @@ async function getFreelancerDetails(request,res){
       value:totalCount
   },
   { label:"Total Approved Project",
-      value:completedCount
+      value:inprogressCount
   },
   { label:"Completed Project",
-      value:inprogressCount
+      value:completedCount
   },
   { label:"Dispute Project",
       value:disputeCount
@@ -133,12 +132,12 @@ async function getArbitratorDetails(request,res){
   let inprogressCount = 0;
   let disputeCount = 0;
   let totalCount = 0;
-
-  var cursor = db.collection("projects").find();
+  let userid = parseInt(request.userId);
+  var cursor = db.collection("projects").find({arbitator_user_id:userid});
   await cursor.forEach(function (doc) {
     if(doc.status === 5){
       completedCount++;
-    }else  if(doc.status === 4){
+    }else if(doc.status === 4){
       disputeCount++;
     } else{
       inprogressCount++;

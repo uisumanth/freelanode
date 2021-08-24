@@ -56,7 +56,7 @@ async function UserRegister(req, res) {
                 console.log("Error occurred while inserting");
                 res.json({ status: false, data: null });
               } else {
-                console.log("inserted record", response.ops[0]);
+                console.log("inserted record");
                 res.json({ status: true, data: response.ops[0] });
               }
             }

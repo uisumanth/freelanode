@@ -15,10 +15,18 @@ function getNextSequence(db, name, callback) {
   );
 }
 
-const CreateBid = (req, res,data) => {
+const CreateBid = async (req, res,data) => {
   const request = req.body;
   db = mongoUtil.getDb();
-  getNextSequence(db, "bidId", function (err, result) {
+  if(request.bidId){
+    const updateStatus = await UpdateBid(request);
+    if(updateStatus){
+      res.json({data: null,status:true});
+    }else{
+      res.json({data: null,status:false});
+    }
+  }else{
+    getNextSequence(db, "bidId", function (err, result) {
     if (!err) {
       db.collection("bids").insertOne(
         {
@@ -35,16 +43,48 @@ const CreateBid = (req, res,data) => {
             console.log("Error occurred while inserting create project");
             res.json({ status: false, data: null });
           } else {
-            console.log("inserted create project record", response.ops[0]);
-            await GetProjects.UpdateProjectStatus(request.projectId,1);
+            console.log("inserted create project record");
+            await GetProjects.UpdateProjectStatus(request.projectId,{status:1});
             res.json({ status: true, data: response.ops[0] });
           }
         }
       );
     }
-  });
+    });
+  }
 };
 
+async function UpdateBid(request) {
+  let query = { bidId: request.bidId };
+  return db.collection("bids", async function (err, collection) {
+    var bidDetails = await collection.findOne(query);
+    if (bidDetails) {
+      collection.updateOne(
+        query,
+        {
+          $set:  {
+            bidAmount: request.bidAmount,
+            deliveredIn: request.deliveredIn,
+            description: request.description,
+            projectId: request.projectId,
+            createdBy:request.userId,
+            status:'Open'
+          },
+        },
+        { acknowledged: true,multi:true },
+        (err, doc) => {
+          if (!err) {
+            return true;
+          } else {
+            return false;
+          }
+        }
+      );
+    } else {
+      return false;
+    }
+  });
+}
 
 async function GetAllBids(req, res, data) {
     db = mongoUtil.getDb();
@@ -68,6 +108,7 @@ async function GetAllBids(req, res, data) {
         res.json({ status: false, data: null, message: "Please enter User ID" });
       }     
       var bidsDetails = [];
+      var output = [];
       var cursor = db.collection("bids").find(...query);
       const promises = []
       await cursor.forEach(async function (doc) {
@@ -75,15 +116,17 @@ async function GetAllBids(req, res, data) {
         bidsDetails.push(doc);
       });
       bidsDetails.forEach((each) => {
-        const promise = getUserDetailsForBid(each);
+        const promise = getProjectDetailsForBid(each);
         promises.push(promise);
       })
       if(promises.length){
         Promise.all(promises).then((results) => {
           results.forEach((val,index)=> {
-            bidsDetails[index]= {...bidsDetails[index],...val};
+            if(val.assigned_userId == request.userId || val.assigned_userId == ""){
+              output.push({...bidsDetails[index],...val});
+            }
           })
-          res.json({data: bidsDetails,status:true});
+          res.json({data: output,status:true});
         })
       }else{
       res.json({data: bidsDetails,status:true});
@@ -94,7 +137,7 @@ async function GetAllBids(req, res, data) {
     }
   }
 
-  async function getUserDetailsForBid(bid){
+  async function getProjectDetailsForBid(bid){
     return await db.collection("projects").findOne({projectId:bid.projectId});
   }
 module.exports = {

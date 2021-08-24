@@ -8,7 +8,6 @@ async function createToken (data,cb) {
 };
 verifyToken = (token, cb) => {
   jwt.verify(token, config.secretKey,function(err,data){
-      console.log(data)
         cb(data);
   });
 };

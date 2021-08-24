@@ -1,5 +1,3 @@
-const e = require("express");
-const { request } = require("express");
 var mongoUtil = require("../../mongoUtil");
 var db;
 
@@ -38,16 +36,16 @@ async function ProjectById(req, res, data) {
     }
     var bidsDetails = await GetProjectsBids(bidQuery);
     var bidUserDetails = null;
-    if(bidsDetails){
+    if(bidsDetails && bidsDetails.length){
       bidUserDetailsResp = await db.collection("users").findOne({user_id: bidsDetails[0].createdBy });
       if(bidUserDetailsResp){
         bidUserDetails = {...bidUserDetailsResp};
-        delete bidUserDetailsResp.password;
+        delete bidUserDetails.password;
       }
     }
     res.json({ status: true, data: { 
       ...projectDetails,
-       bids: bidsDetails ? bidsDetails[0]: null,
+       bids: bidsDetails && bidsDetails.length ? bidsDetails[0]: null,
        userDetails:userDetails,bidUserDetails:bidUserDetails 
       }
      });
@@ -137,35 +135,18 @@ async function GetProjectsByUser(req, res, data) {
   res.json({ status: true, data: all_data });
 }
 
-async function UpdateProjectStatus(projectId, status,judge="",type="") {
+async function UpdateProjectStatus(projectId, body) {
   db = mongoUtil.getDb();
   let query = { projectId: projectId };
-  const result = await db.collection("projects").findOne(query);
-  let body = {
-    status:status
-  };
-  if(judge){
-    body["judgement"] = judge;
-  }
-  if(type === "employer"){
-    body["employerStatus"] = true;
-  }else if(type === "freelancer"){
-    body["freelancerStatus"] = true;
-  }
-
-  if(result["employerStatus"] && result["freelancerStatus"]){
-    body["status"] = 5  
-  }
- console.log(body)
   await db.collection("projects", async function (err, collection) {
     var projectDetails = await collection.findOne(query);
-    if (projectDetails && (projectDetails.status < status || status === 6)) {
+    if (projectDetails && (projectDetails.status < body.status || body.status === 6 || projectDetails.status == 6)) {
       collection.updateOne(
         query,
         {
           $set: body,
         },
-        { acknowledged: true },
+        { acknowledged: true,multi:true },
         (err, doc) => {
           if (!err) {
             return true;
@@ -183,8 +164,7 @@ async function UpdateProjectStatus(projectId, status,judge="",type="") {
   const request = req.body;
   db = mongoUtil.getDb();
   try{
-    const status  = await UpdateProjectStatus(request.projectId,3);
-    console.log("status",status)
+    const status  = await UpdateProjectStatus(request.projectId,{status:3});
     if(status){
       res.json({ status: true, data: null });
       }else{
@@ -197,11 +177,26 @@ async function UpdateProjectStatus(projectId, status,judge="",type="") {
   }
 }
 
-function markAsArbitrator(req,res){
+async function markAsArbitrator(req,res){
   const request = req.body;
   db = mongoUtil.getDb();
   try{
-    const status  = UpdateProjectStatus(request.projectId,4);
+    let query = [{role:{$elemMatch:{value:"arbitator"}}}];
+    const projectDetail = await db.collection("projects").findOne({ projectId: request.projectId});
+    if(projectDetail && projectDetail.skillSet && projectDetail.skillSet.length){
+        query.push({skillSet:{$elemMatch:{value:projectDetail.skillSet[0].Value}}})
+    }
+    var userDetails = null;
+    userDetails= await db.collection("users").findOne(...query);
+    if(!userDetails){
+      query = [{role:{$elemMatch:{value:"arbitator"}}}]
+      userDetails= await db.collection("users").findOne(...query);
+    }
+    let body = {status:4}; 
+    if(userDetails){
+      body["arbitator_user_id"] = userDetails.user_id;
+    }
+    const status  = UpdateProjectStatus(request.projectId,body);
     if(status){
       res.json({ status: true, data: null });
       }else{
@@ -214,25 +209,30 @@ function markAsArbitrator(req,res){
   }
 }
 
- function markAsComplete(req,res){
+async function markAsComplete(req,res){
   const request = req.body;
   db = mongoUtil.getDb();
   try{
-    const type = request.type;
-    let statusType = 6;
-    if(type){
-      statusType = 5;
-    }
-    let status = "";
-    if(type){
-      status = UpdateProjectStatus(request.projectId,statusType,null,type);
-    }else{
-    let judge ="";
+    let body = {};
     if(request.judgement){
-      judge = request.judgement
+      body["judge"] = request.judgement;
+      body["status"] = 5;
+    }else if(request.type){
+      let key = request.type === "employer" ? "employerStatus": "freelancerStatus";
+      body[key] = true;
+      body["status"] = 6;
+      const result = await db.collection("projects").findOne({ projectId: request.projectId});
+      console.log((result["employerStatus"] &&  request.type === "freelancer" ) , 
+      (result["freelancerStatus"] &&  request.type === "employer" ))
+      if((result["employerStatus"] &&  request.type === "freelancer" ) || 
+        (result["freelancerStatus"] &&  request.type === "employer" )){
+        body["status"] = 5; 
+      }
+    }else{
+      body["status"] = 6;
     }
-     status = UpdateProjectStatus(request.projectId,5,judge);
-    }
+    console.log(body)
+    const status =  UpdateProjectStatus(request.projectId,body);
     if(status){
     res.json({ status: true, data: null });
     }else{
@@ -244,19 +244,21 @@ function markAsArbitrator(req,res){
     res.json({ status: false, data: "Update failed" });
   }
 }
-function acceptBid(req,res){
+async function acceptBid(req,res){
   const request = req.body
   db = mongoUtil.getDb();
   let query = { projectId: request.projectId };
+  var bidDetails =  await db.collection("bids").findOne({ bidId:request.bidId });
   db.collection("projects", function (err, collection) {
     var projectDetails = collection.findOne({ query });
-    if (projectDetails && !projectDetails.bidId ) {
+    if (bidDetails && projectDetails && !projectDetails.bidId ) {
       collection.updateOne(
         query,
         {
           $set: {
             status: 2,
-            bidId:request.bidId
+            bidId:request.bidId,
+            assigned_userId:bidDetails.createdBy
           },
         },
         { acknowledged: true },
