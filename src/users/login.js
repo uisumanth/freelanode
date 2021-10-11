@@ -13,7 +13,6 @@ async function LoginInsert (req, res) { console.log(req.body)
         res.json({ status: false, data: null, message: "User not Found" });
       } else {
         validateJwt.createToken(item,(token)=>{
-            console.log(token)
           res.json({ status: true, data: {...item,accessToken:token} });
           })
       }

@@ -1,12 +1,12 @@
 var express = require('express');
 var mongoUtil = require( './mongoUtil' );
 var GenerateRoutes = require('./routes') 
-const bodyParser = require('body-parser');
-
+var path=require('path');
 var app = express();
-app.use(bodyParser.urlencoded());
-app.use(bodyParser.json());
 
+app.use(express.urlencoded());
+app.use(express.json());
+app.use("/v1/files", express.static(__dirname + '/public/uploads'));
 GenerateRoutes(app);
 
 app.listen(8080, function () {
