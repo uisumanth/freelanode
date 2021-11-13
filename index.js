@@ -9,8 +9,8 @@ app.use(express.json());
 app.use("/v1/files", express.static(__dirname + '/public/uploads'));
 GenerateRoutes(app);
 
-app.listen(8080, function () {
-  console.log('running on port:8080');
+app.listen(4444, function () {
+  console.log('running on port:4444');
 });
 
 

@@ -10,10 +10,9 @@ var basePath = "/v1";
 function GenerateRoutes(app) {
   allRoutes.map((row) => {
     app[row.method](basePath + row.path, function (req, res) {
-     //  row.guard = false;
+       row.guard = false;
       if (row.guard) {
         validateJwt.verifyToken(req.headers.authorization, (data) => {
-            // console.log(data)
             if(data){
                 row.callback(req, res, data);
             }else{
