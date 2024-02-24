@@ -140,7 +140,7 @@ async function UpdateProjectStatus(projectId, body) {
   let query = { projectId: projectId };
   await db.collection("projects", async function (err, collection) {
     var projectDetails = await collection.findOne(query);
-    if (projectDetails && (projectDetails.status < body.status || body.status === 6 || projectDetails.status == 6)) {
+    if (projectDetails && (projectDetails.status <= body.status || body.status === 6 || projectDetails.status == 6)) {
       collection.updateOne(
         query,
         {

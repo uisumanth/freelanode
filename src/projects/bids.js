@@ -21,6 +21,26 @@ const CreateBid = async (req, res,data) => {
   if(request.bidId){
     const updateStatus = await UpdateBid(request);
     if(updateStatus){
+      var bidDetails =  db.collection("bids").find({projectId: request.projectId});
+      var totalAmount =0;
+      var count =0;
+      var avg_bid = 0;
+
+      await bidDetails.forEach(row =>{
+        if(!isNaN(row.bidAmount)){
+          totalAmount = totalAmount + parseFloat(row.bidAmount);
+          count++;
+        }
+      })
+      if(count && totalAmount){
+        avg_bid = Math.round((totalAmount)/count)
+      }
+
+      await GetProjects.UpdateProjectStatus(request.projectId,{
+        status:1,
+        avg_bid:avg_bid,
+        total_bids:count
+      });
       res.json({data: null,status:true});
     }else{
       res.json({data: null,status:false});
@@ -44,7 +64,14 @@ const CreateBid = async (req, res,data) => {
             res.json({ status: false, data: null });
           } else {
             console.log("inserted create project record");
-            await GetProjects.UpdateProjectStatus(request.projectId,{status:1});
+            var projectDetails = await  db.collection("projects").findOne({projectId: request.projectId});
+            var avg_bid = Math.round((projectDetails.avg_bid + request.bidAmount)/2)
+            var total_bids = projectDetails.total_bids +1;
+            await GetProjects.UpdateProjectStatus(request.projectId,{
+              status:1,
+              total_bids: total_bids,
+              avg_bid:avg_bid
+            });
             res.json({ status: true, data: response.ops[0] });
           }
         }

@@ -58,12 +58,15 @@ async function AllUsers(req, res) {
   var query = { user_id: { $ne: parseInt(request.userId) } };
   var cursor = db.collection("users").find(query);
   await cursor.forEach(function (doc) {
-    all_data.push({
-      user_id: doc.user_id,
-      firstName: doc.firstName,
-      lastName: doc.lastName,
-      user_img:doc.user_img
-    });
+    const role = doc.role && doc.role.length ? doc.role[0].value : null;
+    if(role != "arbitrator"){
+      all_data.push({
+        user_id: doc.user_id,
+        firstName: doc.firstName,
+        lastName: doc.lastName,
+        user_img:doc.user_img
+      });
+    }
   });
   res.json({ status: true, data: all_data });
 }
